@@ -9,7 +9,7 @@ import requests
 
 def get_stock(instrument_id):
     url = "http://www.nasdaqomxnordic.com/webproxy/DataFeedProxy.aspx"
-    url_params = {
+    params = {
         "SubSystem": "History",
         "Action": "GetChartData",
         "inst.an": "id,nm,fnm,isin,tp,chp,ycp",
@@ -22,7 +22,7 @@ def get_stock(instrument_id):
         "DefaultDecimals": "false",
         "Instrument": instrument_id
     }
-    response = requests.get(url, params=url_params)
+    response = requests.get(url, params=params)
     return response.json()
 
 def handler_stock(event, context):
@@ -30,5 +30,30 @@ def handler_stock(event, context):
     return {
         "statusCode": 200,
         "body": json.dumps(data, indent=1),
+        "headers": {"Access-Control-Allow-Origin": "*"}
+    }
+
+def get_beer():
+    url = f"https://api.untappd.com/v4/user/checkins/{os.environ.get('UNTAPPD_USERNAME')}"
+    params = {
+        "client_id": os.environ.get("UNTAPPD_APIKEY_ID"),
+        "client_secret": os.environ.get("UNTAPPD_APIKEY_SECRET")
+    }
+    response = requests.get(url, params=params)
+    print(f"Ratelimit remaining: {response.headers.get('x-ratelimit-remaining')}")
+    return response.json()
+
+def handler_beer(event, context):
+    beers = get_beer()
+    response = [
+        {
+            "created_at": item["created_at"],
+            "score": item["rating_score"],
+            "beer": item["beer"]["beer_name"]
+        } for item in beers["response"]["checkins"]["items"]
+    ]
+    return {
+        "statusCode": 200,
+        "body": json.dumps(response, indent=1),
         "headers": {"Access-Control-Allow-Origin": "*"}
     }

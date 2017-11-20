@@ -12,6 +12,7 @@ provider:
   region: ${self:custom.region}
   profile: ${self:custom.credentialsProfile}
   environment:
+    UNTAPPD_USERNAME: ${self:custom.secret.untappd_username}
     UNTAPPD_APIKEY_ID: ${self:custom.secret.untappd_apikey_id}
     UNTAPPD_APIKEY_SECRET: ${self:custom.secret.untappd_apikey_secret}
     INSTRUMENT_ID: HEX145875
@@ -23,6 +24,14 @@ functions:
     events:
       - http:
           path: stock
+          method: get
+          cors: true
+  apiBeer:
+    handler: api.handler_beer
+    memorySize: 256
+    events:
+      - http:
+          path: beer
           method: get
           cors: true
 
