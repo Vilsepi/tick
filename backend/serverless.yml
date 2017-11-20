@@ -1,0 +1,35 @@
+service: tick
+frameworkVersion: ">=1.24.1 <2.0.0"
+
+custom:
+  credentialsProfile: heap
+  region: eu-west-1
+  secret: ${file(../secrets.yml)}
+
+provider:
+  name: aws
+  runtime: python3.6
+  region: ${self:custom.region}
+  profile: ${self:custom.credentialsProfile}
+  environment:
+    UNTAPPD_APIKEY_ID: ${self:custom.secret.untappd_apikey_id}
+    UNTAPPD_APIKEY_SECRET: ${self:custom.secret.untappd_apikey_secret}
+    INSTRUMENT_ID: HEX145875
+
+functions:
+  apiStock:
+    handler: api.handler_stock
+    memorySize: 256
+    events:
+      - http:
+          path: stock
+          method: get
+          cors: true
+
+package:
+  exclude:
+    - "*.txt"
+    - "*.md"
+    - "*.yml"
+    - "*.json"
+    - "*.xml"
